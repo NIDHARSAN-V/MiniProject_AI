@@ -810,7 +810,7 @@
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
       "position": [
-        4288,
+        4768,
         880
       ],
       "id": "e75690fd-e3b8-47b1-9787-0081f0c2bf96",
@@ -973,8 +973,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        336,
-        208
+        896,
+        256
       ],
       "id": "4177db6f-7480-4233-b8f5-0c36140b05a2",
       "name": "read_req",
@@ -990,8 +990,8 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        48,
-        208
+        -96,
+        256
       ],
       "id": "b51f2e43-27aa-4371-976c-3be127c63809",
       "name": "When clicking 'Execute workflow'"
@@ -1013,8 +1013,8 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.9,
       "position": [
-        224,
-        -128
+        784,
+        -160
       ],
       "id": "04bd9013-6190-4991-880e-ca124464b756",
       "name": "Basic LLM Chain"
@@ -1027,8 +1027,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
-        224,
-        64
+        784,
+        32
       ],
       "id": "12ae5a18-4659-436c-9408-028bd67aed18",
       "name": "Groq Chat Model",
@@ -1046,8 +1046,8 @@
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.4,
       "position": [
-        -80,
-        -192
+        -112,
+        -176
       ],
       "id": "56a1fc94-0621-4c82-b846-23054bdd2595",
       "name": "When chat message received",
@@ -1060,8 +1060,8 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        368,
-        64
+        928,
+        32
       ],
       "id": "88c809f3-6ad1-47d5-b24d-fccb3ca051bf",
       "name": "Structured Output Parser"
@@ -1088,8 +1088,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        512,
-        -128
+        1072,
+        -160
       ],
       "id": "994cc174-5df1-466f-a8fe-4d8db11f02bf",
       "name": "Edit Fields"
@@ -1232,8 +1232,8 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.2,
       "position": [
-        -96,
-        0
+        -112,
+        16
       ],
       "id": "5edcf877-38c1-4724-920f-d940cd3d04cb",
       "name": "Telegram Trigger",
@@ -1250,7 +1250,7 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        3904,
+        3888,
         880
       ],
       "id": "9328184e-aba4-4791-b2b2-a13a983f79d9",
@@ -1259,13 +1259,13 @@
     {
       "parameters": {
         "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
-        "text": "={{ \n\"🏪 \" + $json.businessTitle + \"\\n\\n\" +\n\"⭐ Rating: \" + $json.overallRating + \"\\n\" +\n\"📍 Address: \" + $json.businessAddress + \"\\n\\n\" +\n\n\"✅ Pros:\\n- \" + JSON.parse($json.pros).join(\"\\n- \") + \"\\n\\n\" +\n\n\"❌ Cons:\\n- \" + JSON.parse($json.cons).join(\"\\n- \") + \"\\n\\n\" +\n\n\"💡 Insights:\\n- \" + JSON.parse($json.insights).join(\"\\n- \") + \"\\n\\n\" +\n\n\"📝 Summary:\\n\" + $json.summary\n}}",
+        "text": "={{\n\"🏪 \" + $('Merge1').item.json.businessTitle + \"\\n\\n\" +\n\"⭐ Rating: \" + $('Merge1').item.json.overallRating + \"\\n\" +\n\"📍 Address: \" + $('Merge1').item.json.businessAddress + \"\\n\\n\" +\n\n\"✅ Pros:\\n- \" + (typeof $('Merge1').item.json.pros === \"string\"\n  ? JSON.parse($('Merge1').item.json.pros)\n  : $('Merge1').item.json.pros\n).join(\"\\n- \") + \"\\n\\n\" +\n\n\"❌ Cons:\\n- \" + (typeof $('Merge1').item.json.cons === \"string\"\n  ? JSON.parse($('Merge1').item.json.cons)\n  : $('Merge1').item.json.cons\n).join(\"\\n- \") + \"\\n\\n\" +\n\n\"💡 Insights:\\n- \" + (typeof $('Merge1').item.json.insights === \"string\"\n  ? JSON.parse($('Merge1').item.json.insights)\n  : $('Merge1').item.json.insights\n).join(\"\\n- \") + \"\\n\\n\" +\n\n\"📝 Summary:\\n\" + $('Merge1').item.json.summary\n}}",
         "additionalFields": {}
       },
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        4112,
+        4576,
         880
       ],
       "id": "25983849-cb35-4036-be53-aefa46f88e6a",
@@ -1280,7 +1280,7 @@
     },
     {
       "parameters": {
-        "jsCode": "\nlet data = $input.first().json.business_data\nlet row_num = $input.first().json.row_number\nconst limit  = $input.first().json.business_data.length\nif (typeof data === \"string\") {\n  data = JSON.parse(data);\n}\n\n// Ensure it's an array\nif (Array.isArray(data)) {\n  // Sort by rating_count (highest first)\n  data.sort((a, b) => (b.rating_count || 0) - (a.rating_count || 0));\n\n  // Take top 3\n  data = data.slice(0, limit);\n}\n\nreturn data.map(item => ({\n  json: {\n    ...item,\n    row_number: row_num\n  }\n}));"
+        "jsCode": "\nlet data = $input.first().json.business_data\nlet row_num = $input.first().json.row_number\n// const limit  = $input.first().json.business_data.length\n\nconst limit  = 3 \nif (typeof data === \"string\") {\n  data = JSON.parse(data);\n}\n\n// Ensure it's an array\nif (Array.isArray(data)) {\n  // Sort by rating_count (highest first)\n  data.sort((a, b) => (b.rating_count || 0) - (a.rating_count || 0));\n\n  // Take top 3\n  data = data.slice(0, limit);\n}\n\nreturn data.map(item => ({\n  json: {\n    ...item,\n    row_number: row_num\n  }\n}));"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -1290,6 +1290,138 @@
       ],
       "id": "15e5c6e5-f6e4-4f40-aad8-e4d14a180994",
       "name": "iter_len_limitSetter"
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $json.key }}",
+        "value": "={{ $json.value }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        4416,
+        880
+      ],
+      "id": "57079047-bf83-4691-b849-947b04bdfbb1",
+      "name": "Redis_set_memory",
+      "credentials": {
+        "redis": {
+          "id": "ltktcvF4UFdnslIN",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Need to add the ai agent \n** tool 1- inital data scrap **\n** tool 2-compare  **\n** tool3 - trend analysis  **\n** tool 4 - filtering options**\n** tool 5 - website link **\n",
+        "height": 176,
+        "width": 592,
+        "color": "#CB5252"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -224,
+        624
+      ],
+      "typeVersion": 1,
+      "id": "d2775d36-9834-4da3-bb32-dfbf89ead048",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🔹 1. Get old memory from Redis\nlet memory;\n\ntry {\n  memory = JSON.parse($input.first().json.data || \"{}\");\n} catch {\n  memory = { history: [] };\n}\n\n// ensure history exists\nif (!memory.history) {\n  memory.history = [];\n}\n\n// 🔹 2. Get NEW data from Merge1\nconst newData = $('Merge1').first().json;\n\n// 🔹 3. Create new entry\nconst newEntry = {\n  timestamp: newData.timestamp || new Date().toISOString(),\n  businessTitle: newData.businessTitle,\n  businessAddress: newData.businessAddress,\n  rating: Number(newData.overallRating),\n  pros: typeof newData.pros === \"string\" ? JSON.parse(newData.pros) : newData.pros,\n  cons: typeof newData.cons === \"string\" ? JSON.parse(newData.cons) : newData.cons,\n  insights: typeof newData.insights === \"string\" ? JSON.parse(newData.insights) : newData.insights,\n  summary: newData.summary,\n  raw_llm_output: newData.raw_llm_output\n};\n\n// 🔹 4. Append\nmemory.history.push(newEntry);\n\n// 🔹 5. Keep last 5\nmemory.history = memory.history.slice(-5);\n\n// 🔹 6. Get query safely\nconst userQuery =\n $('Telegram Trigger').first().json.message.text || \"unknown\";\n\nconst normalizedQuery = userQuery.toLowerCase().trim();\n\n// 🔹 7. Return for Redis SET\nreturn [{\n  json: {\n    key: `user_query:${normalizedQuery}`,\n    value: JSON.stringify(memory)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4256,
+        880
+      ],
+      "id": "ddee9cfa-e309-4933-9df2-c50a77379614",
+      "name": "transform_for_redis"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "data",
+        "key": "={{ `user_query:${$('Telegram Trigger').item.json.message.text.toLowerCase().trim()}` }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        4080,
+        880
+      ],
+      "id": "76b88059-7b6b-487f-8974-d77ba559aa87",
+      "name": "Redis_get_userprompt",
+      "credentials": {
+        "redis": {
+          "id": "ltktcvF4UFdnslIN",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "memory",
+        "key": "={{  }}",
+        "options": {}
+      },
+      "id": "37b71df4-7584-460d-a57d-2f851f9773a8",
+      "name": "Redis Get Memory",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        1168
+      ],
+      "credentials": {
+        "redis": {
+          "id": "ltktcvF4UFdnslIN",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "a99dce50-af30-446e-abca-86417b13253b",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1,
+      "position": [
+        1552,
+        1168
+      ]
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "id": "095a5a05-ceae-47b8-8fc9-265a615a584c",
+      "name": "LLM Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1456,
+        1408
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1600,
+        1408
+      ],
+      "id": "5cc7ba75-74fc-4527-8c5a-95a981a0e145",
+      "name": "Simple Memory"
     }
   ],
   "pinData": {},
@@ -1749,7 +1881,7 @@
       "main": [
         [
           {
-            "node": "Send a text message",
+            "node": "Redis_get_userprompt",
             "type": "main",
             "index": 0
           }
@@ -1777,6 +1909,72 @@
           }
         ]
       ]
+    },
+    "Redis_set_memory": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "transform_for_redis": {
+      "main": [
+        [
+          {
+            "node": "Redis_set_memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis_get_userprompt": {
+      "main": [
+        [
+          {
+            "node": "transform_for_redis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Get Memory": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -1784,7 +1982,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "e80e4630-b4c4-4654-b5cf-a4a7a744f1d8",
+  "versionId": "2e39bceb-6fb3-4cdd-a8a6-361bc0655ccb",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "4fdcfe3a25ca9e301b16c94e753aeaa574b271e4a0d3760a441f1113dc8475cd"
