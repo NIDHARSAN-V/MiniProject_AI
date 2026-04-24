@@ -1290,19 +1290,6 @@
       ],
       "id": "15e5c6e5-f6e4-4f40-aad8-e4d14a180994",
       "name": "iter_len_limitSetter"
-    },
-    {
-      "parameters": {
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3.1,
-      "position": [
-        112,
-        592
-      ],
-      "id": "dddc23d9-82f9-4c69-a389-aa7ebd41db12",
-      "name": "AI Agent"
     }
   ],
   "pinData": {},
@@ -1797,7 +1784,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "9e633ce4-be6f-4ef5-8d8a-78a97a8d929a",
+  "versionId": "e80e4630-b4c4-4654-b5cf-a4a7a744f1d8",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "4fdcfe3a25ca9e301b16c94e753aeaa574b271e4a0d3760a441f1113dc8475cd"
