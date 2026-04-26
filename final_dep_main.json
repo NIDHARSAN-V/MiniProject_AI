@@ -1,0 +1,940 @@
+{
+  "name": "final_dep_main",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        336,
+        -32
+      ],
+      "id": "02c19231-77e5-4687-aa09-675d4cb052f2",
+      "name": "Initial Trigger",
+      "webhookId": "5c795046-1e52-414e-b0a8-f4c44c5d2b88",
+      "credentials": {
+        "telegramApi": {
+          "id": "dxguxqYTznmHXKJ1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "⏳ Searching for businesses... Please wait a moment!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        544,
+        -32
+      ],
+      "id": "4e927c1b-9076-4b84-bac1-4dfd38ee9845",
+      "name": "Followup message",
+      "webhookId": "878df74d-dc8d-4bc8-a1de-d69f3cbc64b1",
+      "credentials": {
+        "telegramApi": {
+          "id": "dxguxqYTznmHXKJ1",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"body\": {\n    \"query\": \"{{ $json.message.text.toLowerCase().trim() }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        784,
+        -32
+      ],
+      "id": "1a698b65-a33d-4271-aee0-84d0d00c2fac",
+      "name": "Normalize Telegram Input"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=user_query: {{ $json.body.query }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=Classify the user query.\n\nIf the query is asking to search or fetch NEW business data \n(restaurants, shops, services, places, etc.), return:\n{ \"route\": \"search\" }\n\nIf the query is asking about:\n- reviews of already fetched results\n- what is good / bad\n- comparison\n- filtering (best, top, cheapest, etc.)\n- follow-up questions\n\nreturn:\n{ \"route\": \"other\" }\n\nRules:\n- Return ONLY valid JSON\n- Do NOT add explanation\n- Do NOT add extra text"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        784,
+        208
+      ],
+      "id": "0e2faee2-2538-4cd1-a602-bf0b4d58e14c",
+      "name": "Query_classifier"
+    },
+    {
+      "parameters": {
+        "model": "qwen/qwen3-32b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        736,
+        480
+      ],
+      "id": "6166503f-9efa-4f19-95ed-207b02ff08e1",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "k3an94rc5QwFjRPX",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"route\" : \"string\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        896,
+        496
+      ],
+      "id": "5ecebbd7-9b01-4f7e-a8a0-4a42df17f6da",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1f13549d-f0b3-4089-a22d-761ae92fcc66",
+              "leftValue": "={{ $json.output.route.toLowerCase().trim() }}",
+              "rightValue": "search",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1088,
+        240
+      ],
+      "id": "bd126be4-cbc2-4266-adf3-6a5257f8f925",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1dxjMlseQbgf_DOddpbckXuIlxkED54Sx4jRLRHvV6G4",
+          "mode": "list",
+          "cachedResultName": "history_track_query",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dxjMlseQbgf_DOddpbckXuIlxkED54Sx4jRLRHvV6G4/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dxjMlseQbgf_DOddpbckXuIlxkED54Sx4jRLRHvV6G4/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1280,
+        0
+      ],
+      "id": "c4e64420-bdee-4354-a273-22f9a53d6f13",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9X5Q30DXnaUtPaT1",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "data",
+        "key": "={{ `user_query:${$json[' user_query'].toLowerCase().trim()}` }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        0
+      ],
+      "id": "3acba597-422d-4ea3-ae16-25dbd53f3925",
+      "name": "Redis",
+      "credentials": {
+        "redis": {
+          "id": "ltktcvF4UFdnslIN",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"has_data\": {{ $json.data !== null && $json.data !== undefined && $json.data !== '' }},\n  \"last_query\": {{ $json.data ? JSON.stringify($json.data) : 'null' }},\n  \"user_query\": \"{{ $('Query_classifier').item.json.body.query }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1648,
+        0
+      ],
+      "id": "0f335150-af02-42cc-ab01-aa7aee465f1d",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=",
+        "options": {
+          "systemMessage": "=You are an AI agent that uses a tool and memory to answer queries.\n\n--------------------------------------------------\n\nINPUT:\n\nUser query:\n{{ \n  (\n    $if($(\"html_trigger\").isExecuted, $(\"html_trigger\").item.json.body.query, null) ||\n    $if($(\"Analyze an image\").isExecuted, $(\"Analyze an image\").item.json.content.parts[0].text, null) ||\n    \"N/A\"\n  ).toLowerCase().trim()\n}}\n\nHas previous data:\n{{ $json.has_data }}\n\nMemory data:\n{{ $json.last_query }}\n\n--------------------------------------------------\n\nAVAILABLE TOOL:\n\n- get_business_data → fetch business data for a NEW query\n\n--------------------------------------------------\n\nRULES:\n\n1. If Has previous data is FALSE:\n   → You MUST call get_business_data\n\n   After receiving the tool result:\n   → Summarize the result clearly\n   → Return the summary as final answer\n   → STOP\n\n--------------------------------------------------\n\n2. If Has previous data is TRUE:\n   → You MUST NOT call any tool\n   → You MUST use Memory data to answer\n\n   Decision logic:\n\n   - If user query contains \"compare\":\n       → Select relevant businesses from Memory data\n       → Compare them (rating, price, pros/cons, ambience, etc.)\n       → Provide a clear conclusion\n\n   - Else if user query contains filtering intent:\n       (top, best, cheapest, rating, family, ambience, etc.)\n       → Filter and rank businesses from Memory data\n       → Return the top results\n\n   - Else:\n       → Answer directly using Memory data\n\n--------------------------------------------------\n\nTOOL INPUT FORMAT:\n\nget_business_data:\n{\n  \"user_query\": \"{{ $json.user_query }}\"\n}\n\n--------------------------------------------------\n\nEXECUTION RULES:\n\n- Call ONLY ONE tool when needed\n- If Has previous data is TRUE → NEVER call tool\n- DO NOT loop\n- DO NOT call tools multiple times\n\nAFTER calling tool:\n→ Summarize result\n→ Return final answer\n→ STOP",
+          "maxIterations": 2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1808,
+        256
+      ],
+      "id": "ae52feca-c1fb-4ae9-97df-36ef523669da",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "id": "8af778bc-68a4-49ca-b035-4d524319ce79",
+      "name": "LLM Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1584,
+        544
+      ],
+      "credentials": {
+        "groqApi": {
+          "id": "fEqgPykaNa7KYKUv",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Fetches business data, reviews, and summaries for a new search query.\n\nUse this tool ONLY when:\n- No previous data is available\n- The user is asking for new places (restaurants, shops, services, etc.)\n\nInput:\n- user_query (string)\n\nOutput:\n- A list of businesses with details\n- This result will be used for future filtering or comparison",
+        "method": "POST",
+        "url": "https://nidharsanaawwss.app.n8n.cloud/webhook-test/get_business_data",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "user_query",
+              "value": "={{ \n  (\n    $if($(\"html_trigger\").isExecuted, $(\"html_trigger\").item.json.body.query, null) ||\n    $if($(\"Analyze an image\").isExecuted, $(\"Analyze an image\").item.json.content.parts[0].text, null) ||\n    \"N/A\"\n  ).toLowerCase().trim()\n}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1952,
+        528
+      ],
+      "id": "4ba07a5b-8213-4e20-a6d7-2a089bbbe19c",
+      "name": "get_business_data",
+      "description": "Fetches business data, reviews and summaries for a place/location query. Call with { user_query: '<full user query>' }"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=sdfhakfhsdf"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1760,
+        544
+      ],
+      "id": "88f4e990-9201-4b30-b864-7ec5cefb1d70",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a response formatter.\n\nresponse:\n{{ $json.output }}\n\n--------------------------------------------------\n\nRULES:\n\n1. If the user has already provided a structured format (tables, aligned text, code-like blocks):\n   → Wrap the entire output in <pre>...</pre>\n   → Preserve spacing exactly\n   → Do NOT add emojis or extra formatting\n\n2. If NO structured format is provided:\n   → Format using Telegram-safe HTML\n\n--------------------------------------------------\n\nFORMAT RULES (for normal formatting):\n\n- Use <b> for headings\n- Use <i> for emphasis\n- DO NOT use <br>\n- Use \"\\n\" for line breaks\n- Use \"•\" for bullet points\n- Use emojis\n- Keep spacing clean and readable\n\n--------------------------------------------------\n\nOUTPUT:\n\nReturn ONLY formatted text"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        2192,
+        256
+      ],
+      "id": "b41913f7-3a50-4d76-8e28-e75282524b2e",
+      "name": "TextCorrect_Aligner"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        2192,
+        528
+      ],
+      "id": "84264abd-5da0-49ae-bbc8-50f1c6f8e3b6",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "k3an94rc5QwFjRPX",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2496,
+        256
+      ],
+      "id": "445f9c01-2bf7-4248-be59-bb27d71dee6c",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "chatId": "=5458922766",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2752,
+        112
+      ],
+      "id": "7eaa12ab-003a-471a-bd02-7dd5e2d95d2a",
+      "name": "Send Agent Reply",
+      "webhookId": "ff89c5ee-0486-4fac-a9ef-d4775ac7b008",
+      "alwaysOutputData": false,
+      "credentials": {
+        "telegramApi": {
+          "id": "dxguxqYTznmHXKJ1",
+          "name": "Telegram account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/query",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        320,
+        208
+      ],
+      "id": "1e077b1e-cdde-4a7f-91da-a8ff49dfc29c",
+      "name": "html_trigger",
+      "webhookId": "483996de-0736-4778-9a3b-21fd0a1ac5de"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "img",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        368,
+        880
+      ],
+      "id": "864c439b-044c-41a2-9f26-06b5521518e0",
+      "name": "Webhook",
+      "webhookId": "75399df2-3e2c-4310-96a5-4bb96537d06d"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "Extract the shop name and location from this image.\n\nReturn exactly in one of these formats:\n\n- If both shop name and location are found:\n  <shop_name> in <location>\n\n- If only shop name is found:\n  <shop_name> in the world\n\n- If only location is found:\n  N/A\n\n- If neither is found:\n  N/A\n\nDo not return JSON.\nDo not add any extra text.\nReturn only one line.",
+        "inputType": "binary",
+        "binaryPropertyName": "image",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        576,
+        880
+      ],
+      "id": "aac53aba-213f-4a56-ae47-918c7f8c9968",
+      "name": "Analyze an image",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "6utQ14DsVHId1Qc6",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8ab9d1b2-960a-4012-a0bc-d47639cd1a87",
+              "leftValue": "={{ $json.content.parts[0].text }}",
+              "rightValue": "false",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        784,
+        880
+      ],
+      "id": "ec0b0b06-81bb-4568-88b9-5a80c88e8875",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"body\": {\n    \"query\": \"{{ $json.content.parts[0].text.toLowerCase().trim() }}\"\n  },\n  \"has_data\": false,\n  \"last_query\": null,\n  \"user_query\": \"{{ $json.content.parts[0].text.toLowerCase().trim() }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1248,
+        592
+      ],
+      "id": "f547161f-16a4-493c-a3df-b52c48689051",
+      "name": "Normalize Image Query"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"myField\": \"N/A\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1280,
+        896
+      ],
+      "id": "45141045-013f-48b4-8542-a258c3cc86c2",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1dxjMlseQbgf_DOddpbckXuIlxkED54Sx4jRLRHvV6G4/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dxjMlseQbgf_DOddpbckXuIlxkED54Sx4jRLRHvV6G4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": 2,
+            " user_query": "={{ $('html_trigger').item.json.body.query.toLowerCase().trim() }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": " user_query",
+              "displayName": " user_query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1408,
+        272
+      ],
+      "id": "dbc8fc0f-9fec-4d10-a751-ecc3f5c5ed16",
+      "name": "history_track",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9X5Q30DXnaUtPaT1",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1dxjMlseQbgf_DOddpbckXuIlxkED54Sx4jRLRHvV6G4/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1dxjMlseQbgf_DOddpbckXuIlxkED54Sx4jRLRHvV6G4/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": 2,
+            " user_query": "={{ $json.content.parts[0].text.toLowerCase().trim()}}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": " user_query",
+              "displayName": " user_query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1008,
+        704
+      ],
+      "id": "3b1c9cc6-3da5-4e47-ad6e-1a312624b452",
+      "name": "history_track2",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9X5Q30DXnaUtPaT1",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Initial Trigger": {
+      "main": [
+        [
+          {
+            "node": "Followup message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Followup message": {
+      "main": [
+        [
+          {
+            "node": "Normalize Telegram Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Telegram Input": {
+      "main": [
+        [
+          {
+            "node": "Query_classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "html_trigger": {
+      "main": [
+        [
+          {
+            "node": "Query_classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query_classifier": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Query_classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Query_classifier",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "history_track",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Redis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "TextCorrect_Aligner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LLM Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_business_data": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TextCorrect_Aligner": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "TextCorrect_Aligner",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        [
+          {
+            "node": "Send Agent Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Analyze an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze an image": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "history_track2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Image Query": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "history_track": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "history_track2": {
+      "main": [
+        [
+          {
+            "node": "Normalize Image Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "93e2063c-7445-44bf-bfcc-bb3a2e701e31",
+  "meta": {
+    "instanceId": "4fdcfe3a25ca9e301b16c94e753aeaa574b271e4a0d3760a441f1113dc8475cd"
+  },
+  "id": "umTxHfPD8f3ilF3j",
+  "tags": []
+}

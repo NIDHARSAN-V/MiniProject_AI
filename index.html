@@ -1,0 +1,774 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>BusinessMind AI | Smart Business Assistant</title>
+  
+  <!-- Google Font & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: var(--bg-gradient);
+      transition: background 0.3s ease, color 0.2s ease;
+      padding: 16px;
+    }
+
+    /* LIGHT MODE VARIABLES (default) */
+    :root {
+      --bg-gradient: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+      --container-bg: rgba(255, 255, 255, 0.94);
+      --header-bg: rgba(255, 255, 255, 0.98);
+      --header-border: rgba(0, 0, 0, 0.08);
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --user-bubble: #0078ff;
+      --user-text: #ffffff;
+      --bot-bubble: #f1f5f9;
+      --bot-text: #0f172a;
+      --input-area-bg: #ffffff;
+      --input-border: #e2e8f0;
+      --placeholder-color: #94a3b8;
+      --btn-bg: #f1f5f9;
+      --btn-hover: #e2e8f0;
+      --send-bg: #0078ff;
+      --send-hover: #0066dd;
+      --shadow-sm: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      --scrollbar-track: #f1f1f1;
+      --scrollbar-thumb: #cbd5e1;
+      --timestamp-color: #64748b;
+      --typing-dot: #475569;
+      --camera-overlay-bg: rgba(0,0,0,0.8);
+    }
+
+    /* DARK MODE VARIABLES */
+    body.dark {
+      --bg-gradient: linear-gradient(135deg, #0b1120 0%, #111827 100%);
+      --container-bg: rgba(18, 25, 40, 0.94);
+      --header-bg: rgba(15, 23, 42, 0.98);
+      --header-border: rgba(255, 255, 255, 0.05);
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --user-bubble: #3b82f6;
+      --user-text: #ffffff;
+      --bot-bubble: #1e293b;
+      --bot-text: #e2e8f0;
+      --input-area-bg: #0f172a;
+      --input-border: #334155;
+      --placeholder-color: #64748b;
+      --btn-bg: #1e293b;
+      --btn-hover: #334155;
+      --send-bg: #3b82f6;
+      --send-hover: #2563eb;
+      --shadow-sm: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      --scrollbar-track: #0f172a;
+      --scrollbar-thumb: #475569;
+      --timestamp-color: #94a3b8;
+      --typing-dot: #94a3b8;
+      --camera-overlay-bg: rgba(0,0,0,0.9);
+    }
+
+    body {
+      background: var(--bg-gradient);
+      backdrop-filter: blur(2px);
+    }
+
+    /* MAIN CHAT CARD */
+    .chat-container {
+      width: 100%;
+      max-width: 550px;
+      height: 85vh;
+      min-height: 600px;
+      background: var(--container-bg);
+      backdrop-filter: blur(20px);
+      border-radius: 36px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: background 0.2s ease;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    /* HEADER */
+    .header {
+      padding: 18px 22px;
+      background: var(--header-bg);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--header-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(145deg, #3b82f6, #1e40af);
+      border-radius: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    .brand h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+
+    .brand p {
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .mode-toggle {
+      background: var(--btn-bg);
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 40px;
+      cursor: pointer;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      color: var(--text-primary);
+    }
+
+    .mode-toggle:hover {
+      background: var(--btn-hover);
+      transform: scale(0.96);
+    }
+
+    /* CHAT BOX */
+    .chat-box {
+      flex: 1;
+      padding: 20px 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scroll-behavior: smooth;
+    }
+
+    .chat-box::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .chat-box::-webkit-scrollbar-track {
+      background: var(--scrollbar-track);
+      border-radius: 10px;
+    }
+
+    .chat-box::-webkit-scrollbar-thumb {
+      background: var(--scrollbar-thumb);
+      border-radius: 10px;
+    }
+
+    /* MESSAGE STYLES */
+    .message {
+      max-width: 85%;
+      padding: 12px 18px;
+      border-radius: 26px;
+      animation: slideUp 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      word-wrap: break-word;
+      line-height: 1.45;
+      font-size: 0.94rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .user {
+      align-self: flex-end;
+      background: var(--user-bubble);
+      color: var(--user-text);
+      border-bottom-right-radius: 6px;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: var(--bot-bubble);
+      color: var(--bot-text);
+      border-bottom-left-radius: 6px;
+    }
+
+    .timestamp {
+      font-size: 9px;
+      opacity: 0.6;
+      margin-top: 6px;
+      letter-spacing: 0.3px;
+      text-align: right;
+      color: var(--timestamp-color);
+    }
+
+    .bot .timestamp {
+      text-align: left;
+    }
+
+    .chat-image {
+      max-width: 100%;
+      border-radius: 20px;
+      margin-top: 6px;
+      border: 1px solid rgba(255,255,255,0.2);
+      max-height: 200px;
+      object-fit: cover;
+    }
+
+    /* TYPING INDICATOR */
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bot-bubble);
+      padding: 10px 20px;
+      border-radius: 28px;
+      width: fit-content;
+      border-bottom-left-radius: 6px;
+    }
+
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--typing-dot);
+      border-radius: 50%;
+      animation: typingWave 1.4s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(1) { animation-delay: 0s; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typingWave {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+      30% { transform: translateY(-6px); opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* INPUT AREA */
+    .input-area {
+      padding: 16px 18px;
+      background: var(--input-area-bg);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--header-border);
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      background: var(--btn-bg);
+      border-radius: 32px;
+      border: 1px solid var(--input-border);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      padding: 6px 14px;
+    }
+
+    .input-wrapper textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      font-family: 'Inter', monospace;
+      font-size: 0.9rem;
+      padding: 10px 4px;
+      resize: none;
+      outline: none;
+      color: var(--text-primary);
+      max-height: 100px;
+    }
+
+    .input-wrapper textarea::placeholder {
+      color: var(--placeholder-color);
+      font-weight: 400;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      background: var(--btn-bg);
+      border: none;
+      width: 46px;
+      height: 46px;
+      border-radius: 50px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+      color: var(--text-primary);
+    }
+
+    .icon-btn:hover {
+      background: var(--btn-hover);
+      transform: scale(0.96);
+    }
+
+    .send-btn {
+      background: var(--send-bg);
+      color: white;
+    }
+
+    .send-btn:hover {
+      background: var(--send-hover);
+    }
+
+    /* Camera Modal Styles */
+    .camera-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--camera-overlay-bg);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0.2s, opacity 0.2s;
+    }
+
+    .camera-modal.active {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .camera-panel {
+      background: var(--container-bg);
+      border-radius: 48px;
+      width: 90%;
+      max-width: 400px;
+      padding: 20px;
+      text-align: center;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    .camera-panel video {
+      width: 100%;
+      border-radius: 32px;
+      background: #000;
+      margin-bottom: 20px;
+      max-height: 400px;
+      object-fit: cover;
+    }
+
+    .camera-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    .cam-btn {
+      padding: 12px 20px;
+      border-radius: 40px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--btn-bg);
+      color: var(--text-primary);
+      font-size: 1rem;
+    }
+
+    .cam-btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+
+    .bot strong {
+      color: #3b82f6;
+    }
+
+    @media (max-width: 480px) {
+      .chat-container { height: 92vh; border-radius: 28px; }
+      .message { max-width: 90%; }
+      .icon-btn { width: 42px; height: 42px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="chat-container">
+  <div class="header">
+    <div class="brand">
+      <div class="avatar">💼</div>
+      <div>
+        <h2>BusinessMind AI</h2>
+        <p>live insights • vision AI</p>
+      </div>
+    </div>
+    <button class="mode-toggle" id="themeToggle" aria-label="Switch theme">
+      <i class="fas fa-moon"></i>
+    </button>
+  </div>
+
+  <div class="chat-box" id="chat"></div>
+
+  <div class="input-area">
+    <div class="input-wrapper">
+      <textarea id="query" placeholder="Ask about strategy, finance, markets... (shift+enter = new line)" rows="1"></textarea>
+    </div>
+    <div class="action-buttons">
+      <!-- File upload -->
+      <label for="imageUpload" class="icon-btn" style="cursor: pointer;" title="Upload image">
+        <i class="fas fa-paperclip"></i>
+      </label>
+      <input type="file" id="imageUpload" accept="image/*" hidden />
+      
+      <!-- Camera button -->
+      <button class="icon-btn" id="cameraBtn" title="Open camera">
+        <i class="fas fa-camera"></i>
+      </button>
+      
+      <button class="icon-btn send-btn" id="sendBtn" title="Send message">
+        <i class="fas fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Camera Modal -->
+<div id="cameraModal" class="camera-modal">
+  <div class="camera-panel">
+    <video id="video" autoplay playsinline></video>
+    <div class="camera-buttons">
+      <button class="cam-btn" id="closeCamera">Cancel</button>
+      <button class="cam-btn cam-btn-primary" id="capturePhoto">Capture & Send</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // DOM elements
+  const chatContainer = document.getElementById("chat");
+  const queryInput = document.getElementById("query");
+  const sendButton = document.getElementById("sendBtn");
+  const imageUpload = document.getElementById("imageUpload");
+  const themeToggle = document.getElementById("themeToggle");
+  const cameraBtn = document.getElementById("cameraBtn");
+  const cameraModal = document.getElementById("cameraModal");
+  const video = document.getElementById("video");
+  const closeCamera = document.getElementById("closeCamera");
+  const capturePhoto = document.getElementById("capturePhoto");
+
+  // Webhook endpoints (original functionality)
+  const TEXT_WEBHOOK = "https://nidharsanaawwss.app.n8n.cloud/webhook-test/query";
+  const IMAGE_WEBHOOK = "https://nidharsanaawwss.app.n8n.cloud/webhook-test/img";
+
+  let stream = null;
+
+  // --- Helper: timestamp
+  function getTime() {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  // --- Add message with optional image rendering enhancement
+  function addMessage(content, type, isImage = false, imageUrl = null) {
+    const messageDiv = document.createElement("div");
+    messageDiv.className = `message ${type}`;
+    
+    let innerHtml = '';
+    if (isImage && imageUrl) {
+      innerHtml = `<img src="${imageUrl}" class="chat-image" alt="uploaded preview" />`;
+      if (content && content.trim() !== "") innerHtml += `<div style="margin-top: 8px;">${content}</div>`;
+    } else {
+      let displayContent = content;
+      if (type === 'bot' && typeof content === 'string') {
+        displayContent = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      }
+      innerHtml = `<div>${displayContent}</div>`;
+    }
+    
+    const timeDiv = `<div class="timestamp">${getTime()}</div>`;
+    messageDiv.innerHTML = innerHtml + timeDiv;
+    chatContainer.appendChild(messageDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    return messageDiv;
+  }
+
+  // TYPING INDICATOR
+  function showTyping() {
+    removeTyping();
+    const typingDiv = document.createElement("div");
+    typingDiv.className = "message bot";
+    typingDiv.id = "typingIndicator";
+    typingDiv.innerHTML = `
+      <div class="typing-indicator">
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span class="typing-dot"></span>
+        <span style="font-size:12px; margin-left:4px;">AI analyzing...</span>
+      </div>
+    `;
+    chatContainer.appendChild(typingDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+  }
+
+  function removeTyping() {
+    const existing = document.getElementById("typingIndicator");
+    if (existing) existing.remove();
+  }
+
+  // BOT RESPONSE HANDLER (text + image)
+  async function getBotResponse(queryText, isImageMode = false, imageFile = null) {
+    showTyping();
+    try {
+      let response;
+      if (isImageMode && imageFile) {
+        const formData = new FormData();
+        formData.append("image", imageFile);
+        const res = await fetch(IMAGE_WEBHOOK, {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+        response = data.text || "📸 Visual processed. What business metrics should I analyze further?";
+      } else {
+        const res = await fetch(TEXT_WEBHOOK, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: queryText }),
+        });
+        const data = await res.json();
+        response = data.text || "💡 I'm your business co-pilot. Could you elaborate on your goal?";
+      }
+      removeTyping();
+      addMessage(response, "bot");
+    } catch (err) {
+      removeTyping();
+      console.error(err);
+      addMessage("⚠️ Network glitch. Our AI will be back online. Meanwhile, ask about growth strategies!", "bot");
+    }
+  }
+
+  // SEND TEXT
+  async function sendTextQuery() {
+    const rawQuery = queryInput.value.trim();
+    if (!rawQuery) return;
+
+    addMessage(rawQuery, "user");
+    queryInput.value = "";
+    autoResizeTextarea();
+    await getBotResponse(rawQuery, false, null);
+  }
+
+  // PROCESS IMAGE FILE (universal for upload & camera capture)
+  async function processImageFile(file) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      addMessage("📁 Please provide a valid image (jpg/png).", "bot");
+      return;
+    }
+    const imageUrl = URL.createObjectURL(file);
+    addMessage("", "user", true, imageUrl);
+    await getBotResponse("", true, file);
+    URL.revokeObjectURL(imageUrl);
+  }
+
+  // FILE UPLOAD HANDLER
+  imageUpload.addEventListener("change", async function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    await processImageFile(file);
+    imageUpload.value = "";
+  });
+
+  // ----- CAMERA INTEGRATION -----
+  async function startCamera() {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+    }
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      video.srcObject = stream;
+    } catch (err) {
+      console.error("Camera error:", err);
+      addMessage("❌ Camera access denied or not available. Please use file upload.", "bot");
+      closeCameraPanel();
+    }
+  }
+
+  function stopCamera() {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      stream = null;
+    }
+    video.srcObject = null;
+  }
+
+  function openCameraPanel() {
+    cameraModal.classList.add("active");
+    startCamera();
+  }
+
+  function closeCameraPanel() {
+    cameraModal.classList.remove("active");
+    stopCamera();
+  }
+
+  cameraBtn.addEventListener("click", openCameraPanel);
+  closeCamera.addEventListener("click", closeCameraPanel);
+
+  capturePhoto.addEventListener("click", () => {
+    if (!video.srcObject) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob(async (blob) => {
+      if (blob) {
+        const file = new File([blob], `camera_capture_${Date.now()}.jpg`, { type: "image/jpeg" });
+        closeCameraPanel();
+        await processImageFile(file);
+      } else {
+        addMessage("⚠️ Failed to capture image.", "bot");
+        closeCameraPanel();
+      }
+    }, "image/jpeg", 0.9);
+  });
+
+  // ----- WELCOME MESSAGE (realistic business bot)
+  function initWelcome() {
+    addMessage("👋 **Hello! I'm BusinessMind AI** — real-time strategist. Ask me about markets, fundraising, operations, or **upload a chart/photo** from gallery or **camera**. Let's grow!", "bot");
+    setTimeout(() => {
+      addMessage("✨ *Quick ideas:* `forecast Q4 revenue` • `analyze this graph` • `pitch deck tips`", "bot");
+    }, 500);
+  }
+
+  // Enter key handling
+  function handleKeyPress(e) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendTextQuery();
+    }
+  }
+
+  function autoResizeTextarea() {
+    if (queryInput) {
+      queryInput.style.height = "auto";
+      queryInput.style.height = Math.min(queryInput.scrollHeight, 110) + "px";
+    }
+  }
+
+  // ---- DARK / LIGHT MODE ----
+  function initTheme() {
+    const savedTheme = localStorage.getItem("business_theme");
+    if (savedTheme === "dark") {
+      document.body.classList.add("dark");
+      themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+    } else {
+      document.body.classList.remove("dark");
+      themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+    }
+  }
+  
+  function toggleTheme() {
+    if (document.body.classList.contains("dark")) {
+      document.body.classList.remove("dark");
+      localStorage.setItem("business_theme", "light");
+      themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+    } else {
+      document.body.classList.add("dark");
+      localStorage.setItem("business_theme", "dark");
+      themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+    }
+  }
+  
+  themeToggle.addEventListener("click", toggleTheme);
+
+  // --- event listeners
+  queryInput.addEventListener("input", autoResizeTextarea);
+  queryInput.addEventListener("keydown", handleKeyPress);
+  sendButton.addEventListener("click", sendTextQuery);
+
+  // disable rapid double sends
+  let isSending = false;
+  const originalSend = sendTextQuery;
+  window.sendTextQuery = async function() {
+    if (isSending) return;
+    isSending = true;
+    await originalSend();
+    isSending = false;
+  };
+  sendTextQuery = window.sendTextQuery;
+  sendButton.onclick = () => { if (!isSending) sendTextQuery(); };
+
+  // additional idle tips for engagement
+  let idleTimer;
+  function resetIdleTimer() {
+    if (idleTimer) clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      const lastMsg = chatContainer.lastChild;
+      if (lastMsg && lastMsg.classList && !lastMsg.classList.contains('bot')) {
+        if (!document.querySelector('.idle-tip')) {
+          const tipDiv = document.createElement('div');
+          tipDiv.className = 'message bot idle-tip';
+          tipDiv.style.opacity = '0.85';
+          tipDiv.innerHTML = `<div>💡 Tip: Use camera to scan a whiteboard or document — I'll extract actionable business insights!</div><div class="timestamp">${getTime()}</div>`;
+          chatContainer.appendChild(tipDiv);
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+          setTimeout(() => tipDiv.remove(), 8000);
+        }
+      }
+    }, 35000);
+  }
+  ['keydown', 'click', 'touchstart'].forEach(ev => document.addEventListener(ev, resetIdleTimer));
+  resetIdleTimer();
+
+  // tooltips
+  document.querySelector('label[for="imageUpload"]').setAttribute('title', 'Upload image from gallery');
+  document.getElementById("cameraBtn").setAttribute('title', 'Open camera to capture document or whiteboard');
+  sendButton.setAttribute('title', 'Send message');
+  
+  // finalize
+  initWelcome();
+  initTheme();
+  autoResizeTextarea();
+  queryInput.focus();
+  
+  console.log("BusinessMind AI fully loaded: camera + upload + light/dark mode");
+</script>
+</body>
+</html>

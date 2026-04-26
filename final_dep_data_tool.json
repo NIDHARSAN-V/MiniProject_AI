@@ -1,0 +1,1890 @@
+{
+  "name": "final_dep_data_tool",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://api.opencagedata.com/geocode/v1/json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.location || \"India\"}}"
+            },
+            {
+              "name": "key",
+              "value": "a4a35d4e4cc84517a8327128de850139"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1152,
+        608
+      ],
+      "id": "c93e9608-84ec-4913-a109-4b7863a4ba30",
+      "name": "lat_lon_extract"
+    },
+    {
+      "parameters": {
+        "jsCode": "const res = $input.first().json.results[0];\n\nreturn [\n  {\n    json: {\n      lat_lon_z: {\n        gps: `@${res.geometry.lat},${res.geometry.lng},14z`\n      }\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        608
+      ],
+      "id": "faa7d036-95cc-453d-b922-2a502d1a6c44",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://google.serper.dev/maps",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-KEY",
+              "value": "0872e76091495125831c9a086e3feb5e4bd09f53"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $('Merge').item.json.query || \"India\" }}"
+            },
+            {
+              "name": "ll",
+              "value": "={{ $json.lat_lon_z.gps }}"
+            },
+            {
+              "name": "page",
+              "value": "={{ $json.page || 1 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1424,
+        608
+      ],
+      "id": "869d67c1-7157-430a-ac48-2e6c2f26b74a",
+      "name": "Place_scrap"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "search_params = _items[0][\"json\"][\"searchParameters\"]\nplaces = _items[0][\"json\"][\"places\"]\nll = _items[0][\"json\"][\"ll\"]\nloc = _items[0][\"json\"][\"searchParameters\"][\"ll\"]\n\nresult = {\n    \"q\": search_params.get(\"q\"),\n     \"loc\" : loc,\n    \"ll\": ll,\n    \"hl\": search_params.get(\"hl\", \"en\"),\n    \"data\": []\n}\n\nfor place in places:\n    result[\"data\"].append({\n        \"title\": place.get(\"title\"),\n        \"address\": place.get(\"address\"),\n        \"lat\": place.get(\"latitude\"),\n        \"lon\": place.get(\"longitude\"),\n        \"rating\": place.get(\"rating\"),\n        \"rating_count\": place.get(\"ratingCount\"),\n        \"pricelevel\": place.get(\"priceLevel\"),\n        \"website\": place.get(\"website\"),\n        \"phone\": place.get(\"phoneNumber\"),\n        \"opening_hours\": place.get(\"openingHours\"),\n        \"cid\": place.get(\"cid\"),\n        \"fid\": place.get(\"fid\"),\n        \"placeid\": place.get(\"placeId\"),\n        \"thumbnail_img_url\":place.get(\"thumbnailUrl\")\n    })\n\nreturn [\n    {\n        \"result\": result\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        608
+      ],
+      "id": "6618200d-f63a-4f6e-b8f0-4ceef4100cfa",
+      "name": "Parser Code"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1GnkS51AQ_cdi51jqg-_gzNUffrTh8mA0qkfN6EhnkVA",
+          "mode": "list",
+          "cachedResultName": "business_data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GnkS51AQ_cdi51jqg-_gzNUffrTh8mA0qkfN6EhnkVA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GnkS51AQ_cdi51jqg-_gzNUffrTh8mA0qkfN6EhnkVA/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "query",
+              "lookupValue": "={{ $('Merge').item.json.query }}"
+            },
+            {
+              "lookupColumn": "location",
+              "lookupValue": "={{ $('Merge').item.json.location }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1888,
+        608
+      ],
+      "id": "e2a3def6-222e-4056-ac4f-feec854a649a",
+      "name": "read_all_business_data",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9X5Q30DXnaUtPaT1",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6d606ebf-2285-4a28-ba60-91faa49de60d",
+              "leftValue": "={{ Object.keys($json).length > 0 }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2272,
+        608
+      ],
+      "id": "3cbb4758-e19a-4c24-8af4-16bb69a4041b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.first();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2480,
+        512
+      ],
+      "id": "e120a7b6-2344-4603-92f0-e1c95e869988",
+      "name": "match_row_number"
+    },
+    {
+      "parameters": {
+        "jsCode": "const rowToMatch = $input.first().json.row_number;\n\n// ✅ Parse business_data properly\nlet business = $('If').first().json.business_data;\n\nif (typeof business === \"string\") {\n  try {\n    business = JSON.parse(business);\n  } catch {\n    business = [];\n  }\n}\n\n// Ensure array\nif (!Array.isArray(business)) {\n  business = [business];\n}\n\nlet existingData = business;\n\n// ✅ New data\nlet newData = $('Parser Code').first().json.result.data || [];\n\nif (typeof newData === \"string\") {\n  try {\n    newData = JSON.parse(newData);\n  } catch {\n    newData = [];\n  }\n}\n\nif (!Array.isArray(newData)) newData = [newData];\n\n// 🔥 Dedup\nconst uniqueKeys = new Set(\n  existingData.map(item => `${item.cid}_${item.fid}_${item.placeid}`)\n);\n\nconst filteredNewData = newData.filter(item => {\n  const key = `${item.cid}_${item.fid}_${item.placeid}`;\n  if (uniqueKeys.has(key)) return false;\n  uniqueKeys.add(key);\n  return true;\n});\n\nconst updatedData = [...existingData, ...filteredNewData];\n\nreturn [\n  {\n    json: {\n      row_number: rowToMatch,\n      query: $input.first().json.query,\n      location : $input.first().json.location,\n      ll : $input.first().json.ll,\n      hl : $input.first().json.hl,\n      business_data: updatedData\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2656,
+        512
+      ],
+      "id": "69ffa37a-3eda-4b20-8e22-3d6d34adca58",
+      "name": "business_data_merge"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1GnkS51AQ_cdi51jqg-_gzNUffrTh8mA0qkfN6EhnkVA",
+          "mode": "list",
+          "cachedResultName": "business_data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GnkS51AQ_cdi51jqg-_gzNUffrTh8mA0qkfN6EhnkVA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GnkS51AQ_cdi51jqg-_gzNUffrTh8mA0qkfN6EhnkVA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "ll": "={{ $json.ll }}",
+            "business_data": "={{ $json.business_data }}",
+            "query": "={{ $json.query }}",
+            "location": "={{ $json.location }}",
+            "hl": "={{ $json.hl }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ll",
+              "displayName": "ll",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "hl",
+              "displayName": "hl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "business_data",
+              "displayName": "business_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2864,
+        512
+      ],
+      "id": "5cfc4651-b8e3-4e4f-9310-6c07cac9de14",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9X5Q30DXnaUtPaT1",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1GnkS51AQ_cdi51jqg-_gzNUffrTh8mA0qkfN6EhnkVA",
+          "mode": "list",
+          "cachedResultName": "business_data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GnkS51AQ_cdi51jqg-_gzNUffrTh8mA0qkfN6EhnkVA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GnkS51AQ_cdi51jqg-_gzNUffrTh8mA0qkfN6EhnkVA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "query": "={{ $('Parser Code').item.json.result.q }}",
+            "location": "={{ $('Merge').item.json.location }}",
+            "ll": "={{ $('Parser Code').item.json.result.ll }}",
+            "hl": "={{ $('Parser Code').item.json.result.hl }}",
+            "business_data": "={{ $('Parser Code').item.json.result.data }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "location",
+              "displayName": "location",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ll",
+              "displayName": "ll",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "hl",
+              "displayName": "hl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "business_data",
+              "displayName": "business_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2544,
+        656
+      ],
+      "id": "8657dcbc-142e-4782-8181-ba6eaea521ed",
+      "name": "append_business_data",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9X5Q30DXnaUtPaT1",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3040,
+        624
+      ],
+      "id": "fe9c7123-3646-4cf5-98aa-7d20b424bdf2",
+      "name": "Merger"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        800,
+        880
+      ],
+      "id": "e7323fe6-0efd-46dd-a2e8-39f7b0d30f09",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://google.serper.dev/reviews",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-KEY",
+              "value": "0872e76091495125831c9a086e3feb5e4bd09f53"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"cid\": \"{{$json.cid}}\",\n  \"fid\": \"{{$json.fid}}\",\n  \"placeId\": \"{{$json.placeid}}\",\n  \"gl\": \"in\",\n  \"sortBy\": \"mostRelevant\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1792,
+        928
+      ],
+      "id": "3e8a5dc2-172f-4bfe-ac0e-88f34d058f71",
+      "name": "review_scrap"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2000,
+        928
+      ],
+      "id": "5f8c3890-d4cc-4b6f-9b01-f4ab60dd5098",
+      "name": "Wait",
+      "webhookId": "657fcf39-8930-49a8-8ef1-e53f3d8e7a79"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── KEY FIX: Chunk reviews into groups of 10 to avoid Groq token limit ──\n// Each chunk will be summarized separately, then a final meta-summary is produced.\n\nconst item = $input.first().json;\nconst search_params = item.searchParameters || {};\nconst allReviews = item.reviews || [];\n\n// Grab business meta from the Loop Over Items current item\nconst placeItem = $('Loop Over Items').item.json;\nconst businessTitle = placeItem.title || 'Unknown Business';\nconst businessAddress = placeItem.address || '';\nconst businessRating = placeItem.rating || '';\nconst businessRatingCount = placeItem.rating_count || '';\nconst row_num = placeItem.row_number;\n\n// Clean + cap reviews to 60 max to stay safe\nconst cleaned = allReviews\n  .filter(r => r.snippet && r.snippet.trim() !== '')\n  .slice(0, 60)\n  .map(r => ({\n    rating: r.rating,\n    date: r.date,\n    snippet: r.snippet.trim().slice(0, 300)  // cap each review snippet at 300 chars\n  }));\n\n// Chunk into groups of 10\nconst CHUNK_SIZE = 10;\nconst chunks = [];\nfor (let i = 0; i < cleaned.length; i += CHUNK_SIZE) {\n  chunks.push(cleaned.slice(i, i + CHUNK_SIZE));\n}\n\n// Return one item per chunk — each will go through the LLM separately\nif (chunks.length === 0) {\n  // No reviews: return a placeholder so downstream doesn't break\n  return [{\n    json: {\n      cid: search_params.cid,\n      fid: search_params.fid,\n      placeId: search_params.placeId || search_params.placeid,\n      businessTitle,\n      businessAddress,\n      businessRating,\n      businessRatingCount,\n      row_num,\n      chunkIndex: 0,\n      totalChunks: 1,\n      reviewChunk: JSON.stringify([]),\n      noReviews: true\n    }\n  }];\n}\n\nreturn chunks.map((chunk, idx) => ({\n  json: {\n    cid: search_params.cid,\n    fid: search_params.fid,\n    placeId: search_params.placeId || search_params.placeid,\n    businessTitle,\n    businessAddress,\n    businessRating,\n    businessRatingCount,\n    row_num,\n    chunkIndex: idx,\n    totalChunks: chunks.length,\n    reviewChunk: JSON.stringify(chunk),\n    noReviews: false\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2224,
+        928
+      ],
+      "id": "394cc294-b7e1-41c3-a3d9-89239cbd444b",
+      "name": "review_chunker"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2448,
+        928
+      ],
+      "id": "355d1673-d382-4f1f-a7c7-efe56925a943",
+      "name": "Chunk Loop"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a business review analyst.\n\nBusiness: {{ $json.businessTitle }}\nAddress: {{ $json.businessAddress }}\nOverall Rating: {{ $json.businessRating }} ({{ $json.businessRatingCount }} reviews)\n\nBelow are {{ $json.chunkIndex === 0 ? 'the first batch of' : 'another batch of' }} customer reviews (chunk {{ $json.chunkIndex + 1 }} of {{ $json.totalChunks }}):\n\n{{ $json.reviewChunk }}\n\nAnalyze ONLY these reviews and respond ONLY with a valid JSON object (no markdown, no explanation) in this exact format:\n{\n  \"pros\": [\"point1\", \"point2\", \"point3\"],\n  \"cons\": [\"point1\", \"point2\", \"point3\"],\n  \"insights\": [\"insight1\", \"insight2\"]\n}\n\nKeep each point concise (under 15 words). Return at most 5 pros, 5 cons, 3 insights.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Analyze the provided reviews and return structured JSON with pros, cons, and insights."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        2656,
+        928
+      ],
+      "id": "4831cc97-97ad-4cd1-bb0f-c3e0dd62a8e1",
+      "name": "Chunk LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        2656,
+        1152
+      ],
+      "id": "dfe56979-61fd-4ee7-aaa2-d4db71a075f2",
+      "name": "Groq Chunk Model",
+      "credentials": {
+        "groqApi": {
+          "id": "fEqgPykaNa7KYKUv",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Collect all chunk summaries for this business and aggregate them\n// This node runs after all chunks of one business are processed\n\nconst allItems = $input.all();\n\n// Parse each chunk's LLM output\nconst allPros = [];\nconst allCons = [];\nconst allInsights = [];\n\nlet businessTitle = '';\nlet businessAddress = '';\nlet businessRating = '';\nlet businessRatingCount = '';\nlet cid = '';\nlet fid = '';\nlet placeId = '';\nlet row_num = null;\n\nfor (const item of allItems) {\n  // The LLM output is in item.json.text\n  const raw = item.json.text || item.json.output || '';\n  businessTitle = item.json.businessTitle || businessTitle;\n  businessAddress = item.json.businessAddress || businessAddress;\n  businessRating = item.json.businessRating || businessRating;\n  businessRatingCount = item.json.businessRatingCount || businessRatingCount;\n  cid = item.json.cid || cid;\n  fid = item.json.fid || fid;\n  placeId = item.json.placeId || placeId;\n  row_num = item.json.row_num ?? row_num;\n\n  try {\n    // Strip markdown fences if present\n    const cleaned = raw.replace(/```json|```/g, '').trim();\n    const parsed = JSON.parse(cleaned);\n    if (Array.isArray(parsed.pros)) allPros.push(...parsed.pros);\n    if (Array.isArray(parsed.cons)) allCons.push(...parsed.cons);\n    if (Array.isArray(parsed.insights)) allInsights.push(...parsed.insights);\n  } catch (e) {\n    // If parsing fails, skip this chunk\n  }\n}\n\n// Deduplicate by lowercased text\nconst dedup = arr => [...new Map(arr.map(x => [x.toLowerCase(), x])).values()];\n\nreturn [{\n  json: {\n    cid,\n    fid,\n    placeId,\n    businessTitle,\n    businessAddress,\n    businessRating,\n    businessRatingCount,\n    row_num,\n    aggregated_pros: dedup(allPros).slice(0, 10),\n    aggregated_cons: dedup(allCons).slice(0, 10),\n    aggregated_insights: dedup(allInsights).slice(0, 6)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2944,
+        928
+      ],
+      "id": "83b394d0-abc4-4de1-b183-44b381ecd500",
+      "name": "aggregate_chunks"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are a senior business review analyst.\n\nBusiness: {{ $json.businessTitle }}\nAddress: {{ $json.businessAddress }}\nOverall Rating: {{ $json.businessRating }} ({{ $json.businessRatingCount }} reviews)\n\nBelow are aggregated findings from multiple review batches:\n\nPROS (raw): {{ JSON.stringify($json.aggregated_pros) }}\nCONS (raw): {{ JSON.stringify($json.aggregated_cons) }}\nINSIGHTS (raw): {{ JSON.stringify($json.aggregated_insights) }}\n\nYour task: Produce a final consolidated summary. Merge duplicates, remove contradictions, and rank by importance.\n\nRespond ONLY with a valid JSON object (no markdown, no explanation) in this exact format:\n{\n  \"businessTitle\": \"...\",\n  \"businessAddress\": \"...\",\n  \"overallRating\": \"...\",\n  \"totalReviews\": \"...\",\n  \"pros\": [\"Top pro 1\", \"Top pro 2\", \"Top pro 3\", \"Top pro 4\", \"Top pro 5\"],\n  \"cons\": [\"Top con 1\", \"Top con 2\", \"Top con 3\", \"Top con 4\", \"Top con 5\"],\n  \"insights\": [\"Key insight 1\", \"Key insight 2\", \"Key insight 3\"],\n  \"summary\": \"2-3 sentence overall summary of this business based on reviews.\"\n}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Produce a final consolidated pros/cons/insights summary from the aggregated review data."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        3200,
+        928
+      ],
+      "id": "c911162f-f223-4b2f-ac02-f7a888dec1ac",
+      "name": "Final Summary LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        3200,
+        1120
+      ],
+      "id": "b961fc62-b954-4d60-8def-c65dd768e76f",
+      "name": "Groq Final Model",
+      "credentials": {
+        "groqApi": {
+          "id": "fEqgPykaNa7KYKUv",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse final LLM output and prepare for sheet append\nconst item = $input.first().json;\nconst raw = item.text || item.output || '';\nconst row_num = $('aggregate_chunks').first().json.row_num\n\nlet parsed = {};\ntry {\n  const cleaned = raw.replace(/```json|```/g, '').trim();\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  parsed = {\n    businessTitle: item.businessTitle,\n    businessAddress: item.businessAddress,\n    overallRating: item.businessRating,\n    totalReviews: item.businessRatingCount,\n    pros: item.aggregated_pros || [],\n    cons: item.aggregated_cons || [],\n    insights: item.aggregated_insights || [],\n    summary: 'Summary parsing failed — raw LLM output stored.'\n  };\n}\n\nconst timestamp = new Date().toISOString();\n\nreturn [{\n  json: {\n    timestamp,\n    cid: item.cid || $('aggregate_chunks').first().json.cid,\n    fid: item.fid || $('aggregate_chunks').first().json.fid,\n    placeId: item.placeId || $('aggregate_chunks').first().json.placeId,\n    row_num: row_num,\n    businessTitle: parsed.businessTitle || item.businessTitle,\n    businessAddress: parsed.businessAddress || item.businessAddress,\n    overallRating: parsed.overallRating || item.businessRating,\n    totalReviews: parsed.totalReviews || item.businessRatingCount,\n    pros: JSON.stringify(parsed.pros || []),\n    cons: JSON.stringify(parsed.cons || []),\n    insights: JSON.stringify(parsed.insights || []),\n    summary: parsed.summary || '',\n    raw_llm_output: raw\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3504,
+        928
+      ],
+      "id": "24981ef2-efa3-4c16-8a3e-a19111a859ef",
+      "name": "parse_final_summary"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1MXYqK2P0lTHMmTS_M3D5yFmSt8Z8zhmTtMde3R1SHw0/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MXYqK2P0lTHMmTS_M3D5yFmSt8Z8zhmTtMde3R1SHw0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {
+            "timestamp": "={{ $json.timestamp }}",
+            "businessTitle": "={{ $json.businessTitle }}",
+            "businessAddress": "={{ $json.businessAddress }}",
+            "overallRating": "={{ $json.overallRating }}",
+            "totalReviews": "={{ $json.totalReviews }}",
+            "pros": "={{ $json.pros }}",
+            "cons": "={{ $json.cons }}",
+            "insights": "={{ $json.insights }}",
+            "summary": "={{ $json.summary }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cid",
+              "displayName": "cid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fid",
+              "displayName": "fid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "placeId",
+              "displayName": "placeId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_num",
+              "displayName": "row_num",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "businessTitle",
+              "displayName": "businessTitle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "businessAddress",
+              "displayName": "businessAddress",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overallRating",
+              "displayName": "overallRating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "totalReviews",
+              "displayName": "totalReviews",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pros",
+              "displayName": "pros",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cons",
+              "displayName": "cons",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "insights",
+              "displayName": "insights",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "summary",
+              "displayName": "summary",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw_llm_output",
+              "displayName": "raw_llm_output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3984,
+        928
+      ],
+      "id": "dc25c46a-fb2d-4bd8-bd6f-d9771deaf6d6",
+      "name": "Append Summary Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9X5Q30DXnaUtPaT1",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        4736,
+        1344
+      ],
+      "id": "4d6eaf68-bd0d-4513-af00-5a7ede5f87f5",
+      "name": "Wait Between Places",
+      "webhookId": "f77ce7f6-0d06-4b6d-b494-be2c5ce22346"
+    },
+    {
+      "parameters": {
+        "content": "## PHASE 1: Geocode Location\n\nOpenCage API converts location text → lat/lng GPS coordinates for Serper",
+        "height": 220,
+        "width": 416,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        864,
+        464
+      ],
+      "typeVersion": 1,
+      "id": "bf5a812a-12e8-4d0e-9980-12e75171143f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## PHASE 2: Serper API — Scrape Places\n\nPosts to /maps with query + GPS. Returns list of businesses.",
+        "height": 220,
+        "width": 432
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1344,
+        448
+      ],
+      "typeVersion": 1,
+      "id": "98178b34-c3e5-4e4b-a2d2-e41818f4d2e0",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## PHASE 3: Business Data Cache (Google Sheets)\n\nChecks if query+location already scraped.\n✅ If YES → update existing row\n❌ If NO → append new row",
+        "height": 220,
+        "width": 1168,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1824,
+        448
+      ],
+      "typeVersion": 1,
+      "id": "64aad3b7-b5f6-48e5-8151-3a48a6ba5bf8",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## PHASE 4: Review Scrape + Chunk Summarization\n\n🚀 OPTIMIZED — Review Cache Check:\n- Reads summary sheet first\n- Matches cid + fid + placeId\n- ✅ Already cached → skip Serper API call\n- ❌ Not cached → hit Serper /reviews API\n\n🔑 TOKEN LIMIT FIX:\n- Reviews split into chunks of 10\n- Each chunk summarized separately by Groq\n- Chunk summaries aggregated\n- Final meta-summary produced",
+        "width": 960,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1264,
+        1136
+      ],
+      "typeVersion": 1,
+      "id": "fad96bc9-1363-4715-989f-e5294fbdf98d",
+      "name": "Phase4 Note"
+    },
+    {
+      "parameters": {
+        "content": "## PHASE 5: Final Summary → Google Sheets\n\nStructured JSON output written to summary sheet:\n• businessTitle, address, rating\n• pros[] (top 5)\n• cons[] (top 5)\n• insights[] (top 3)\n• summary (2-3 sentence narrative)",
+        "height": 300,
+        "width": 700,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        2928,
+        1088
+      ],
+      "typeVersion": 1,
+      "id": "4cfe1d27-7e84-49d8-ad50-6902c80e5124",
+      "name": "Phase5 Note"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3728,
+        928
+      ],
+      "id": "9945af64-9630-4071-90db-698f46f65318",
+      "name": "Wait1",
+      "webhookId": "0a059427-7c59-484d-8664-692ac31abb30"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1GnkS51AQ_cdi51jqg-_gzNUffrTh8mA0qkfN6EhnkVA",
+          "mode": "list",
+          "cachedResultName": "business_data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GnkS51AQ_cdi51jqg-_gzNUffrTh8mA0qkfN6EhnkVA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1GnkS51AQ_cdi51jqg-_gzNUffrTh8mA0qkfN6EhnkVA/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "query",
+              "lookupValue": "={{ $json.query }}"
+            },
+            {
+              "lookupColumn": "location",
+              "lookupValue": "={{ $json.location || \"India\"}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2800,
+        656
+      ],
+      "id": "904376cf-7f8b-4ee7-9820-254b23215501",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9X5Q30DXnaUtPaT1",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/18r3LQSmYS8jJWrdaCVZ5OnC0ZOirHK0KE2AFyPwEStk/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/18r3LQSmYS8jJWrdaCVZ5OnC0ZOirHK0KE2AFyPwEStk/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        496,
+        736
+      ],
+      "id": "c203c4e0-c3f7-4685-bf0e-2b095e6b2143",
+      "name": "read_req",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9X5Q30DXnaUtPaT1",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        256,
+        736
+      ],
+      "id": "bf7c104f-f2f1-4226-9449-23102d47f530",
+      "name": "When clicking 'Execute workflow'"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        432,
+        512
+      ],
+      "id": "4a0bbe3b-a460-496d-9c04-1c7c355a8347",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "k3an94rc5QwFjRPX",
+          "name": "Groq account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"query\" : \"string\",\n  \"location\" : \"string\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        560,
+        512
+      ],
+      "id": "33e9177c-7c1c-45e9-8333-f1f78402bf5e",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        736,
+        592
+      ],
+      "id": "f2285bc3-575b-444b-ab6d-f292da32c649",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"query\": \"{{ $json.output.query }}\",\n  \"location\": \"{{ $json.output.location }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        720,
+        320
+      ],
+      "id": "f58a9148-b8d9-456e-9d76-bd6d00ed37cf",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4b613256-e1a8-4fe7-9ce1-ffcf5dd03c7f",
+              "leftValue": "={{ $json.review_already_exists }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1664,
+        1360
+      ],
+      "id": "fc4cd4e6-9e43-4c19-b2e0-09a012077146",
+      "name": "check_review_exist"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1MXYqK2P0lTHMmTS_M3D5yFmSt8Z8zhmTtMde3R1SHw0/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MXYqK2P0lTHMmTS_M3D5yFmSt8Z8zhmTtMde3R1SHw0/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1312,
+        928
+      ],
+      "id": "2cf63472-06c1-405d-869c-f86db53bbf18",
+      "name": "read_review_cache",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9X5Q30DXnaUtPaT1",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Check if this business already has a review summary cached\n// by matching cid, fid, and placeId against the summary sheet rows\n\nconst currentItem = $('Loop Over Items').item.json;\nconst cid     = String(currentItem.cid     || '').trim();\nconst fid     = String(currentItem.fid     || '').trim();\nconst placeid = String(currentItem.placeid || '').trim();\n\n// All rows from the summary sheet\nconst allRows = $input.all();\n\nconst alreadyExists = allRows.some(row => {\n  const r = row.json;\n  return (\n    String(r.cid     || '').trim() === cid     &&\n    String(r.fid     || '').trim() === fid     &&\n    String(r.placeId || '').trim() === placeid\n  );\n});\n\nreturn [{\n  json: {\n    ...currentItem,\n    review_already_exists: alreadyExists\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1520,
+        928
+      ],
+      "id": "9458a923-b79a-4303-a588-3f295d52845a",
+      "name": "check_review_cache_js"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1MXYqK2P0lTHMmTS_M3D5yFmSt8Z8zhmTtMde3R1SHw0",
+          "mode": "list",
+          "cachedResultName": "business_review",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MXYqK2P0lTHMmTS_M3D5yFmSt8Z8zhmTtMde3R1SHw0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1MXYqK2P0lTHMmTS_M3D5yFmSt8Z8zhmTtMde3R1SHw0/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "cid",
+              "lookupValue": "={{ $json.cid }}"
+            },
+            {
+              "lookupColumn": "fid",
+              "lookupValue": "={{ $json.fid }}"
+            },
+            {
+              "lookupColumn": "placeId",
+              "lookupValue": "={{ $json.placeid }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2112,
+        1376
+      ],
+      "id": "0fb63b51-483e-4adc-945e-f3130b43335b",
+      "name": "get_from_review",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "9X5Q30DXnaUtPaT1",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3696,
+        1360
+      ],
+      "id": "685d6daa-b35d-45f1-b7d8-553d28a0483e",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Webhook').item.json.body.chat_id }}",
+        "text": "={{\n\"🏪 \" + $('Merge1').item.json.businessTitle + \"\\n\\n\" +\n\"⭐ Rating: \" + $('Merge1').item.json.overallRating + \"\\n\" +\n\"📍 Address: \" + $('Merge1').item.json.businessAddress + \"\\n\\n\" +\n\n\"✅ Pros:\\n- \" + (typeof $('Merge1').item.json.pros === \"string\"\n  ? JSON.parse($('Merge1').item.json.pros)\n  : $('Merge1').item.json.pros\n).join(\"\\n- \") + \"\\n\\n\" +\n\n\"❌ Cons:\\n- \" + (typeof $('Merge1').item.json.cons === \"string\"\n  ? JSON.parse($('Merge1').item.json.cons)\n  : $('Merge1').item.json.cons\n).join(\"\\n- \") + \"\\n\\n\" +\n\n\"💡 Insights:\\n- \" + (typeof $('Merge1').item.json.insights === \"string\"\n  ? JSON.parse($('Merge1').item.json.insights)\n  : $('Merge1').item.json.insights\n).join(\"\\n- \") + \"\\n\\n\" +\n\n\"📝 Summary:\\n\" + $('Merge1').item.json.summary\n}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        4480,
+        1120
+      ],
+      "id": "7b1858c8-b50c-4fe0-a990-f90a3b772495",
+      "name": "Send a text message",
+      "webhookId": "75f36da6-a22c-4c47-b21f-967c66de7635",
+      "credentials": {
+        "telegramApi": {
+          "id": "dxguxqYTznmHXKJ1",
+          "name": "Telegram account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "\nlet data = $input.first().json.business_data\nlet row_num = $input.first().json.row_number\n// const limit  = $input.first().json.business_data.length\n\nconst limit  = 3 \nif (typeof data === \"string\") {\n  data = JSON.parse(data);\n}\n\n// Ensure it's an array\nif (Array.isArray(data)) {\n  // Sort by rating_count (highest first)\n  data.sort((a, b) => (b.rating_count || 0) - (a.rating_count || 0));\n\n  // Take top 3\n  data = data.slice(0, limit);\n}\n\nreturn data.map(item => ({\n  json: {\n    ...item,\n    row_number: row_num\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3424,
+        624
+      ],
+      "id": "a2d9a006-c65e-4bcd-961c-521124290ede",
+      "name": "iter_len_limitSetter"
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $json.key }}",
+        "value": "={{ $json.value }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        4224,
+        1216
+      ],
+      "id": "376eadb7-5feb-4ba4-ab45-c280fc7a5219",
+      "name": "Redis_set_memory",
+      "credentials": {
+        "redis": {
+          "id": "ltktcvF4UFdnslIN",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Need to add the ai agent \n** tool 1- inital data scrap **\n** tool 2-compare  **\n** tool3 - trend analysis  **\n** tool 4 - filtering options**\n",
+        "height": 176,
+        "width": 592,
+        "color": "#CB5252"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "50c50527-7c55-40cd-851f-9f7c4998d6a2",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 🔹 1. Get old memory from Redis\nlet memory;\n\ntry {\n  memory = JSON.parse($input.first().json.data || \"{}\");\n} catch {\n  memory = { history: [] };\n}\n\n// ensure history exists\nif (!memory.history) {\n  memory.history = [];\n}\n\n// 🔹 2. Get NEW data from Merge1\nconst newData = $('Merge1').first().json;\n\n// 🔹 3. Create new entry\nconst newEntry = {\n  timestamp: newData.timestamp || new Date().toISOString(),\n  businessTitle: newData.businessTitle,\n  businessAddress: newData.businessAddress,\n  rating: Number(newData.overallRating),\n  pros: typeof newData.pros === \"string\" ? JSON.parse(newData.pros) : newData.pros,\n  cons: typeof newData.cons === \"string\" ? JSON.parse(newData.cons) : newData.cons,\n  insights: typeof newData.insights === \"string\" ? JSON.parse(newData.insights) : newData.insights,\n  summary: newData.summary,\n  raw_llm_output: newData.raw_llm_output\n};\n\n// 🔹 4. Append\nmemory.history.push(newEntry);\n\n// 🔹 5. Keep last 5\nmemory.history = memory.history.slice(-5);\n\n// 🔹 6. Get query safely\nconst userQuery =$('Webhook').first().json.body.user_query|| \"unknown\";\n\nconst normalizedQuery = userQuery.toLowerCase().trim();\n\n// 🔹 7. Return for Redis SET\nreturn [{\n  json: {\n    key: `user_query:${normalizedQuery}`,\n    value: JSON.stringify(memory)\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4064,
+        1360
+      ],
+      "id": "44bb7a8c-6a43-49bf-bbd4-f617be8c0061",
+      "name": "transform_for_redis"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "data",
+        "key": "={{ `user_query:${($('Webhook').item.json.body.user_query || '').toLowerCase().trim()}` }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        3888,
+        1216
+      ],
+      "id": "fa1e76cc-c168-4c1d-8f13-fdacbcfb1336",
+      "name": "Redis_get_userprompt",
+      "credentials": {
+        "redis": {
+          "id": "ltktcvF4UFdnslIN",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.user_query }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a strict information extraction agent.\n\nYour task is to extract structured search parameters from a user query.\n\nExtract the following fields:\n- location: the city, area, or place mentioned\n- query: the type of business or service (normalized to singular form)\n\nRules:\n- Convert plural to singular (e.g., \"bakeries\" → \"bakery\")\n- Remove adjectives like \"best\", \"top\", \"cheap\"\n- If no location is found, return empty string \"\"\n- If no query is found, return empty string \"\"\n- Do NOT add extra fields\n- Do NOT explain anything\n- Output ONLY valid JSON\n\nOutput format:\n{\n  \"location\": \"\",\n  \"query\": \"\"\n}"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        416,
+        320
+      ],
+      "id": "c6299b6c-5757-4d91-b526-2d9c8c558704",
+      "name": "Data Extractor Chain"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "get_business_data",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        320
+      ],
+      "id": "b4ffe1c4-d3da-4ad4-a437-e5ba37d1e5c8",
+      "name": "Webhook",
+      "webhookId": "fe73f20f-92bd-44cf-8352-b608eff464d2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"data\": {{ JSON.stringify($items().map(item => item.json.result?.text || item.json.value)) }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1056,
+        832
+      ],
+      "id": "c4c1913b-7f17-474d-8890-09c1b60a120e",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "lat_lon_extract": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Place_scrap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Place_scrap": {
+      "main": [
+        [
+          {
+            "node": "Parser Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser Code": {
+      "main": [
+        [
+          {
+            "node": "read_all_business_data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "read_all_business_data": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "match_row_number",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "append_business_data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "match_row_number": {
+      "main": [
+        [
+          {
+            "node": "business_data_merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "business_data_merge": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Merger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "append_business_data": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merger": {
+      "main": [
+        [
+          {
+            "node": "iter_len_limitSetter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "read_review_cache",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "review_scrap": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "review_chunker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "review_chunker": {
+      "main": [
+        [
+          {
+            "node": "Chunk Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chunk Loop": {
+      "main": [
+        [
+          {
+            "node": "aggregate_chunks",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Chunk LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chunk LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Chunk Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chunk Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Chunk LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "aggregate_chunks": {
+      "main": [
+        [
+          {
+            "node": "Final Summary LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Final Summary LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "parse_final_summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Final Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Final Summary LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parse_final_summary": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Summary Sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Between Places": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Append Summary Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Merger",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "read_req": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "When clicking 'Execute workflow'": {
+      "main": [
+        [
+          {
+            "node": "read_req",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Data Extractor Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Data Extractor Chain",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "lat_lon_extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check_review_exist": {
+      "main": [
+        [
+          {
+            "node": "review_scrap",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "get_from_review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "read_review_cache": {
+      "main": [
+        [
+          {
+            "node": "check_review_cache_js",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check_review_cache_js": {
+      "main": [
+        [
+          {
+            "node": "check_review_exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get_from_review": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Redis_get_userprompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Wait Between Places",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "iter_len_limitSetter": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis_set_memory": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "transform_for_redis": {
+      "main": [
+        [
+          {
+            "node": "Redis_set_memory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis_get_userprompt": {
+      "main": [
+        [
+          {
+            "node": "transform_for_redis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Extractor Chain": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Data Extractor Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8eac911a-6081-4b29-8a35-3e07ff4b9d03",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4fdcfe3a25ca9e301b16c94e753aeaa574b271e4a0d3760a441f1113dc8475cd"
+  },
+  "id": "gzpfluDr4bii8pQp",
+  "tags": []
+}
