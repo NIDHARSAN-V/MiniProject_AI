@@ -493,8 +493,8 @@
   const capturePhoto = document.getElementById("capturePhoto");
 
   // Webhook endpoints (original functionality)
-  const TEXT_WEBHOOK = "https://nidharsanaawwss.app.n8n.cloud/webhook-test/query";
-  const IMAGE_WEBHOOK = "https://nidharsanaawwss.app.n8n.cloud/webhook-test/img";
+  const TEXT_WEBHOOK = "https://nidharsanaawwss.app.n8n.cloud/webhook/query";
+  const IMAGE_WEBHOOK = "https://nidharsanaawwss.app.n8n.cloud/webhook/img";
 
   let stream = null;
 
@@ -672,9 +672,6 @@
   // ----- WELCOME MESSAGE (realistic business bot)
   function initWelcome() {
     addMessage("👋 **Hello! I'm BusinessMind AI** — real-time strategist. Ask me about markets, fundraising, operations, or **upload a chart/photo** from gallery or **camera**. Let's grow!", "bot");
-    setTimeout(() => {
-      addMessage("✨ *Quick ideas:* `forecast Q4 revenue` • `analyze this graph` • `pitch deck tips`", "bot");
-    }, 500);
   }
 
   // Enter key handling
